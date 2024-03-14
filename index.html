@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rainbow Circles</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const dotRadius = 4;
+    const dotSpacing = 8;
+    const rainbowColors = ['#ff0000', '#ffa500', '#ffff00', '#008000', '#0000ff', '#4b0082', '#ee82ee'];
+
+    const circles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function drawDot(x, y, color) {
+      ctx.beginPath();
+      ctx.arc(x, y, dotRadius, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+
+    function drawCircle(circle) {
+      const { x, y, radius, colorIndex } = circle;
+      const color = rainbowColors[colorIndex % rainbowColors.length];
+
+      for (let angle = 0; angle < 2 * Math.PI; angle += dotSpacing / radius) {
+        const dotX = x + Math.cos(angle) * radius;
+        const dotY = y + Math.sin(angle) * radius;
+        drawDot(dotX, dotY, color);
+      }
+    }
+
+    function updateCircles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < circles.length; i++) {
+        const circle = circles[i];
+        circle.radius += dotSpacing;
+
+        if (circle.radius > Math.max(canvas.width, canvas.height)) {
+          circles.splice(i, 1);
+          i--;
+        } else {
+          drawCircle(circle);
+        }
+      }
+
+      requestAnimationFrame(updateCircles);
+    }
+
+    canvas.addEventListener('click', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const colorIndex = circles.length;
+
+      circles.push({ x, y, radius: 0, colorIndex });
+    });
+
+    resizeCanvas();
+    updateCircles();
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+</body>
+</html>
